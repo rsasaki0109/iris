@@ -52,7 +52,7 @@ Eigen::Matrix4f Aligner::estimate7DoF(
 {
   g2o::SparseOptimizer optimizer;
   g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(
-      g2o::make_unique<g2o::BlockSolverX>(g2o::make_unique<g2o::LinearSolverDense<g2o::BlockSolverX::PoseMatrixType>>()));
+      std::make_unique<g2o::BlockSolverX>(std::make_unique<g2o::LinearSolverDense<g2o::BlockSolverX::PoseMatrixType>>()));
   optimizer.setAlgorithm(solver);
 
   setVertexSim3(optimizer, T);

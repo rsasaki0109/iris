@@ -40,6 +40,7 @@
 #ifndef PCL_REGISTRATION_CORRESPONDENCE_ESTIMATION_BACK_PROJECTION_H_
 #define PCL_REGISTRATION_CORRESPONDENCE_ESTIMATION_BACK_PROJECTION_H_
 
+#include <memory>
 #include <pcl/registration/correspondence_estimation.h>
 #include <pcl/registration/correspondence_types.h>
 
@@ -57,8 +58,8 @@ template <typename PointSource, typename PointTarget, typename NormalT, typename
 class CorrespondenceEstimationBackProjection : public pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>
 {
 public:
-  typedef boost::shared_ptr<CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>> Ptr;
-  typedef boost::shared_ptr<const CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>> ConstPtr;
+  using Ptr = std::shared_ptr<CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>>;
+  using ConstPtr = std::shared_ptr<const CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>>;
 
   using pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::initCompute;
   using pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::initComputeReciprocal;
@@ -188,11 +189,10 @@ public:
   getKSearch() const { return (k_); }
 
   /** \brief Clone and cast to CorrespondenceEstimationBase */
-  virtual boost::shared_ptr<pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>>
-  clone() const
+  std::shared_ptr<pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>>
+  clone() const override
   {
-    Ptr copy(new CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>(*this));
-    return (copy);
+    return std::make_shared<CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>>(*this);
   }
 
 protected:

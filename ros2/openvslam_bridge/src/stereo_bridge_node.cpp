@@ -25,6 +25,7 @@
 
 #include "stereo_bridge.hpp"
 #include <chrono>
+#include <functional>
 #include <cv_bridge/cv_bridge.h>
 #include <fstream>
 #include <image_transport/image_transport.hpp>
