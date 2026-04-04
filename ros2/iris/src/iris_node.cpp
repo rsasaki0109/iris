@@ -29,12 +29,15 @@
 #include "system/system.hpp"
 #include <chrono>
 #include <fstream>
+#include <iomanip>
+#include <limits>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <pcl_conversions/pcl_conversions.h>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/float32.hpp>
+#include <tf2/time.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
@@ -181,9 +184,7 @@ private:
       vslam_update_ = false;
       auto m_start = std::chrono::system_clock::now();
 
-      builtin_interfaces::msg::Time process_stamp_msg;
-      pcl_conversions::fromPCL(vslam_data_->header.stamp, process_stamp_msg);
-      rclcpp::Time process_stamp(process_stamp_msg);
+      rclcpp::Time process_stamp = pcl_conversions::fromPCL(vslam_data_->header.stamp);
 
       system_->execute(2, T_vslam, vslam_data_);
 

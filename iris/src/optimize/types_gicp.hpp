@@ -39,6 +39,7 @@ namespace optimize
 using g2o::Matrix3;
 using g2o::Vector3;
 using g2o::VertexSim3Expmap;
+using g2o::number_t;
 
 class EdgeGICP
 {

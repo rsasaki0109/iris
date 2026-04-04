@@ -50,8 +50,8 @@ link_directories(${PCL_LIBRARY_DIRS})
 
 # Shared algorithm sources (no ROS dependencies) from the ros1 package
 set(IRIS_CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/../../iris/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)  # ros2-specific sources (must come first)
 include_directories(${IRIS_CORE_SRC})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 file(GLOB CORE_SOURCES
   "${IRIS_CORE_SRC}/core/*.cpp"
