@@ -1,0 +1,34 @@
+{
+  "name": "iris ROS Noetic",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/catkin_ws/src/iris",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/catkin_ws/src/iris,type=bind",
+  "mounts": [
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
+  ],
+  "runArgs": ["--network=host"],
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "ROS_MASTER_URI": "http://localhost:11311"
+  },
+  "postCreateCommand": "bash /catkin_ws/src/iris/.devcontainer/setup.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-iot.vscode-ros"
+      ],
+      "settings": {
+        "C_Cpp.default.includePath": [
+          "/opt/ros/noetic/include",
+          "/catkin_ws/devel/include"
+        ],
+        "ros.distro": "noetic"
+      }
+    }
+  }
+}
