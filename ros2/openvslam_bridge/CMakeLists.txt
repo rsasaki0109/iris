@@ -31,6 +31,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 # Shared non-ROS bridge sources from the ros1 package
 set(BRIDGE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/../../openvslam_bridge/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${BRIDGE_SRC})
 
 # OpenVSLAM (built as part of the ros1 openvslam_bridge submodule)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)

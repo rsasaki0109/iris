@@ -4,8 +4,11 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "workspaceFolder": "/colcon_ws/src/iris",
-  "workspaceMount": "source=${localWorkspaceFolder},target=/colcon_ws/src/iris,type=bind",
+  "workspaceFolder": "/iris_repo",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/iris_repo,type=bind",
+  "remoteEnv": {
+    "IRIS_REPO": "/iris_repo"
+  },
   "mounts": [
     "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
   ],
@@ -14,7 +17,7 @@
     "DISPLAY": "${localEnv:DISPLAY}",
     "ROS_DOMAIN_ID": "42"
   },
-  "postCreateCommand": "bash /colcon_ws/src/iris/ros2/.devcontainer/setup.sh",
+  "postCreateCommand": "bash /iris_repo/ros2/.devcontainer/setup.sh 2>&1 | tee /iris_repo/ros2_setup.log",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -25,7 +28,9 @@
       "settings": {
         "C_Cpp.default.includePath": [
           "/opt/ros/humble/include/**",
-          "/colcon_ws/install/*/include/**"
+          "/colcon_ws/install/*/include/**",
+          "/iris_repo/iris/src/**",
+          "/iris_repo/openvslam_bridge/3rd/openvslam/src/**"
         ],
         "ros.distro": "humble"
       }
