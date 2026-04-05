@@ -58,8 +58,8 @@ template <typename PointSource, typename PointTarget, typename NormalT, typename
 class CorrespondenceEstimationBackProjection : public pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>
 {
 public:
-  using Ptr = std::shared_ptr<CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>>;
-  using ConstPtr = std::shared_ptr<const CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>>;
+  using Ptr = pcl::shared_ptr<CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>>;
+  using ConstPtr = pcl::shared_ptr<const CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>>;
 
   using pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::initCompute;
   using pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::initComputeReciprocal;
@@ -189,10 +189,11 @@ public:
   getKSearch() const { return (k_); }
 
   /** \brief Clone and cast to CorrespondenceEstimationBase */
-  std::shared_ptr<pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>>
+  typename pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::Ptr
   clone() const override
   {
-    return std::make_shared<CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>>(*this);
+    using BasePtr = typename pcl::registration::CorrespondenceEstimationBase<PointSource, PointTarget, Scalar>::Ptr;
+    return BasePtr(new CorrespondenceEstimationBackProjection<PointSource, PointTarget, NormalT, Scalar>(*this));
   }
 
 protected:
