@@ -33,8 +33,8 @@ set(BRIDGE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/../../openvslam_bridge/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # OpenVSLAM (built as part of the ros1 openvslam_bridge submodule)
-set(BUILD_EXAMPLES OFF)
-set(USE_PANGOLIN_VIEWER OFF)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(USE_PANGOLIN_VIEWER OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../openvslam_bridge/3rd/openvslam
                  ${CMAKE_CURRENT_BINARY_DIR}/openvslam)
 
