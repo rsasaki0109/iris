@@ -26,6 +26,7 @@
 #include "bridge.hpp"
 #include <chrono>
 #include <cv_bridge/cv_bridge.h>
+#include <opencv2/imgcodecs.hpp>
 #include <fstream>
 #include <image_transport/image_transport.hpp>
 #include <pcl_conversions/pcl_conversions.h>
