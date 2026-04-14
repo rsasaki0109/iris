@@ -66,5 +66,6 @@ install(TARGETS
   openvslam_stereo_bridge_node
   DESTINATION lib/${PROJECT_NAME}
 )
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 ament_package()

@@ -1,30 +1,39 @@
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 import os
 
 
 def generate_launch_description():
     pkg_iris = get_package_share_directory("iris")
-    pkg_root = os.path.join(pkg_iris, "..", "..", "..", "..")  # workspace root
+    pkg_openvslam_bridge = get_package_share_directory("openvslam_bridge")
 
     return LaunchDescription([
         DeclareLaunchArgument(
             "iris_config_path",
-            default_value=os.path.join(pkg_iris, "..", "config", "iris_mono_kitti.yaml"),
+            default_value=os.path.join(pkg_iris, "config", "iris_mono_kitti.yaml"),
+            description="Path to iris config yaml",
         ),
         DeclareLaunchArgument(
             "vslam_config_path",
             default_value=os.path.join(
-                pkg_iris, "..", "openvslam_bridge", "3rd", "openvslam",
-                "example", "kitti", "KITTI_mono_00-02.yaml"),
+                pkg_openvslam_bridge, "config", "KITTI_mono_00-02.yaml"),
+            description="Path to OpenVSLAM config yaml",
         ),
-        DeclareLaunchArgument("pcd_path", default_value=os.path.join(pkg_root, "kitti_00.pcd")),
-        DeclareLaunchArgument("vocab_file", default_value=os.path.join(pkg_root, "orb_vocab.dbow2")),
+        DeclareLaunchArgument(
+            "pcd_path",
+            default_value=os.path.join(os.path.expanduser("~"), "kitti_00.pcd"),
+            description="Path to pre-built pointcloud map (.pcd)",
+        ),
+        DeclareLaunchArgument(
+            "vocab_file",
+            default_value=os.path.join(os.path.expanduser("~"), "orb_vocab.dbow2"),
+            description="Path to ORB vocabulary file (.dbow2)",
+        ),
         DeclareLaunchArgument("image_topic_name0", default_value="/image_raw0"),
-        DeclareLaunchArgument("is_image_compressed", default_value="true"),
+        DeclareLaunchArgument("is_image_compressed", default_value="false"),
         DeclareLaunchArgument("is_image_color", default_value="false"),
         DeclareLaunchArgument("keyframe_recollection", default_value="20"),
 

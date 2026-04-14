@@ -92,5 +92,8 @@ target_link_libraries(iris_node
 
 install(TARGETS iris_node DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../config/
+        DESTINATION share/${PROJECT_NAME}/config
+        FILES_MATCHING PATTERN "iris_*.yaml" PATTERN "*.rviz")
 
 ament_package()
