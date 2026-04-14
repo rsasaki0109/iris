@@ -17,7 +17,7 @@
     "DISPLAY": "${localEnv:DISPLAY}",
     "ROS_DOMAIN_ID": "42"
   },
-  "postCreateCommand": "bash /iris_repo/ros2/.devcontainer/setup.sh 2>&1 | tee /iris_repo/ros2_setup.log",
+  "postCreateCommand": "bash /iris_repo/ros2/.devcontainer/setup.sh 2>&1 | tee /tmp/ros2_setup.log",
   "customizations": {
     "vscode": {
       "extensions": [

@@ -46,9 +46,10 @@ RUN git clone https://github.com/RainerKuemmerle/g2o.git /tmp/g2o && \
     ldconfig && \
     rm -rf /tmp/g2o
 
-# Build DBoW2 (shinsumicco custom version)
+# Build DBoW2 (shinsumicco custom version, pinned to known-good commit)
 RUN git clone https://github.com/shinsumicco/DBoW2.git /tmp/DBoW2 && \
     cd /tmp/DBoW2 && \
+    git checkout e8cc74d && \
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && \
     cmake --build build -j$(nproc) && \
     cmake --install build && \

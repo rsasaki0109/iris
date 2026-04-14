@@ -4,7 +4,7 @@
   <name>iris</name>
   <version>0.0.0</version>
   <description>Visual localization in pre-built pointcloud maps (ROS 2)</description>
-  <maintainer email="kento.yabuuchi@tier4.jp">Kento Yabuuchi</maintainer>
+  <maintainer email="ryohei.sasaki@map4.jp">Ryohei Sasaki</maintainer>
   <license>BSD</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
