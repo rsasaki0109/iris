@@ -89,7 +89,8 @@ Place `orb_vocab.dbow2` and `kitti_00.pcd` in `~`.
 ros2 launch iris stereo_kitti00.launch.py \
   pcd_path:=$HOME/kitti_00.pcd \
   vocab_file:=$HOME/orb_vocab.dbow2
-ros2 bag play kitti_00_stereo  # another terminal
+ros2 launch iris rviz.launch.py     # another terminal
+ros2 bag play kitti_00_stereo       # another terminal
 ```
 
 #### Monocular
@@ -97,7 +98,8 @@ ros2 bag play kitti_00_stereo  # another terminal
 ros2 launch iris mono_kitti00.launch.py \
   pcd_path:=$HOME/kitti_00.pcd \
   vocab_file:=$HOME/orb_vocab.dbow2
-ros2 bag play kitti_00_stereo  # another terminal
+ros2 launch iris rviz.launch.py     # another terminal
+ros2 bag play kitti_00_stereo       # another terminal
 ```
 
 > If the estimated position is misaligned, use `2D Pose Estimate` in RViz2.
