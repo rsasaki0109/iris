@@ -199,8 +199,8 @@ template <typename PointInT, typename PointOutT>
 class NormalEstimation : public pcl::Feature<PointInT, PointOutT>
 {
 public:
-  typedef boost::shared_ptr<NormalEstimation<PointInT, PointOutT>> Ptr;
-  typedef boost::shared_ptr<const NormalEstimation<PointInT, PointOutT>> ConstPtr;
+  using Ptr = pcl::shared_ptr<NormalEstimation<PointInT, PointOutT>>;
+  using ConstPtr = pcl::shared_ptr<const NormalEstimation<PointInT, PointOutT>>;
   using pcl::Feature<PointInT, PointOutT>::feature_name_;
   using pcl::Feature<PointInT, PointOutT>::getClassName;
   using pcl::Feature<PointInT, PointOutT>::indices_;

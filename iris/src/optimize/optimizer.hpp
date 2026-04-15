@@ -28,6 +28,7 @@
 #include "core/types.hpp"
 #include "map/map.hpp"
 #include <Eigen/Dense>
+#include <list>
 
 namespace iris
 {

@@ -1,0 +1,39 @@
+{
+  "name": "iris ROS 2 Humble",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/iris_repo",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/iris_repo,type=bind",
+  "remoteEnv": {
+    "IRIS_REPO": "/iris_repo"
+  },
+  "mounts": [
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
+  ],
+  "runArgs": ["--network=host"],
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "ROS_DOMAIN_ID": "42"
+  },
+  "postCreateCommand": "bash /iris_repo/ros2/.devcontainer/setup.sh 2>&1 | tee /tmp/ros2_setup.log",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-iot.vscode-ros"
+      ],
+      "settings": {
+        "C_Cpp.default.includePath": [
+          "/opt/ros/humble/include/**",
+          "/colcon_ws/install/*/include/**",
+          "/iris_repo/iris/src/**",
+          "/iris_repo/openvslam_bridge/3rd/openvslam/src/**"
+        ],
+        "ros.distro": "humble"
+      }
+    }
+  }
+}

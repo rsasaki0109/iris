@@ -53,7 +53,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 message(STATUS "PCL version:\n\t${PCL_VERSION}")
 
 # == OpenCV ==
-find_package(OpenCV 3.2 REQUIRED)
+find_package(OpenCV REQUIRED)
 message(STATUS "OpenCV version:\n\t${OpenCV_VERSION}")
 
 # == Eigen3 ==
@@ -66,8 +66,8 @@ find_package(catkin REQUIRED COMPONENTS cv_bridge image_transport tf)
 catkin_package(CATKIN_DEPENDS cv_bridge image_transport tf)
 
 # == Openvslam ==
-set(BUILD_EXAMPLES OFF) # disable building examples
-set(USE_PANGOLIN_VIEWER OFF) # disbale buidling viewer
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # disable building examples
+set(USE_PANGOLIN_VIEWER OFF CACHE BOOL "" FORCE) # disable building viewer
 add_subdirectory(3rd/openvslam)
 
 # == Headers and sources ==

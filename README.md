@@ -28,55 +28,94 @@ If you are using ROS, you only need to install `g2o` and `DBoW2`.
 > ~~see also: [openvslam](https://openvslam.readthedocs.io/en/master/installation.html#dependencies).~~ <span style="color: orange;">Modifications are underway.</span>
 
 ## How to Build
+
+### ROS 1 (Noetic) — devcontainer
+
+Open `ros1/src/iris/` in VS Code and reopen in the devcontainer.  
+The container builds g2o and DBoW2 automatically, then runs `catkin_make`.
+
+Or manually:
 ```bash
-mkdir -p catkin_ws/src
-cd catkin_ws/src
-git clone --recursive https://github.com/MapIV/iris.git
+mkdir -p catkin_ws/src && cd catkin_ws/src
+git clone --recursive https://github.com/rsasaki0109/iris.git
 cd ..
-catkin_make
+catkin_make -DCMAKE_BUILD_TYPE=Release
+```
+
+### ROS 2 (Humble) — devcontainer
+
+Open the repository in VS Code and reopen in the devcontainer (select `ros2/.devcontainer`).  
+The container builds g2o and DBoW2 automatically, then runs `colcon build`.
+
+Or manually:
+```bash
+git clone --recursive https://github.com/rsasaki0109/iris.git ~/iris_repo
+mkdir -p ~/colcon_ws && cd ~/colcon_ws
+colcon build \
+  --base-paths ~/iris_repo/ros2/iris ~/iris_repo/ros2/openvslam_bridge \
+  --cmake-args -DCMAKE_BUILD_TYPE=Release
+source install/setup.bash
 ```
 
 ## How to Run with Sample Data
+
 ### Download sample data
-1. visual feature file: `orb_vocab.dbow` from [URL](https://www.dropbox.com/s/z8vodds9y6yxg0p/orb_vocab.dbow2?dl=0)
-2. pointcloud map : `kitti_00.pcd` from [URL](https://www.dropbox.com/s/tzdqtsl1p7v1ylo/kitti_00.pcd?dl=0)
-3. rosbag : `kitti_00_stereo.bag` from [URL](https://www.dropbox.com/s/kfouz9gkjefpvb5/kitti_00_stereo.bag?dl=0)
+1. Vocabulary: `orb_vocab.dbow2` from [Dropbox](https://www.dropbox.com/s/z8vodds9y6yxg0p/orb_vocab.dbow2?dl=0)
+2. Pointcloud map: `kitti_00.pcd` from [Dropbox](https://www.dropbox.com/s/tzdqtsl1p7v1ylo/kitti_00.pcd?dl=0)
+3. Rosbag: `kitti_00_stereo.bag` from [Dropbox](https://www.dropbox.com/s/kfouz9gkjefpvb5/kitti_00_stereo.bag?dl=0)
 
-### Run with sample data
-#### Stereo camera sample
+### ROS 1
+
+#### Stereo
 ```bash
-roscd iris/../../../
-# download sample data to here (orb_voceb.dbow, kitti_00.pcd, kitti_00_stereo.bag)
-ls # > build devel install src orb_vocab.dbow kitti_00.pcd kitti_00_stereo.bag
 roslaunch iris stereo_kitti00.launch
-roslaunch iris rviz.launch # (on another terminal)
-rosbag play kitti_00_stereo.bag # (on another terminal)
+roslaunch iris rviz.launch          # another terminal
+rosbag play kitti_00_stereo.bag     # another terminal
 ```
-> If the estimated position is misaligned, it can be corrected using `2D Pose Estimate` in rviz.
 
-#### Monocular camera sample
+#### Monocular
 ```bash
-roscd iris/../../../
-# download sample data to here (orb_voceb.dbow, kitti_00.pcd, kitti_00_stereo.bag)
-ls # > build devel install src orb_vocab.dbow kitti_00.pcd kitti_00_stereo.bag
 roslaunch iris mono_kitti00.launch
-roslaunch iris rviz.launch # (on another terminal)
-rosbag play kitti_00_stereo.bag # (on another terminal)
+roslaunch iris rviz.launch          # another terminal
+rosbag play kitti_00_stereo.bag     # another terminal
 ```
-> If the estimated position is misaligned, it can be corrected using `2D Pose Estimate` in rviz.
 
+### ROS 2
+
+Place `orb_vocab.dbow2` and `kitti_00.pcd` in `~`.
+
+#### Stereo
+```bash
+ros2 launch iris stereo_kitti00.launch.py \
+  pcd_path:=$HOME/kitti_00.pcd \
+  vocab_file:=$HOME/orb_vocab.dbow2
+ros2 launch iris rviz.launch.py     # another terminal
+ros2 bag play kitti_00_stereo       # another terminal
+```
+
+#### Monocular
+```bash
+ros2 launch iris mono_kitti00.launch.py \
+  pcd_path:=$HOME/kitti_00.pcd \
+  vocab_file:=$HOME/orb_vocab.dbow2
+ros2 launch iris rviz.launch.py     # another terminal
+ros2 bag play kitti_00_stereo       # another terminal
+```
+
+> If the estimated position is misaligned, use `2D Pose Estimate` in RViz2.
 
 ## How to Run with Your Data
-### All you need to prepare
-1. pointcloud map file (*.pcd)
-1. rosbag (*.bag)
-1. Config file for iris such as `config/sample_iris_config.yaml`
-1. (only if you use OpenVSLAM) Config file for vSLAM such as `config/sample_openvslam_config.yaml` 
 
-### Run
 ```bash
-roslaunch iris openvslam.launch iris_config_path:=... 
-rosbag play yours.bag # (on another terminal)
+# ROS 1
+roslaunch iris openvslam.launch iris_config_path:=<your_iris.yaml>
+
+# ROS 2
+ros2 launch iris stereo_kitti00.launch.py \
+  iris_config_path:=<your_iris.yaml> \
+  vslam_config_path:=<your_vslam.yaml> \
+  pcd_path:=<your_map.pcd> \
+  vocab_file:=<your_vocab.dbow2>
 ```
 
 ## License
