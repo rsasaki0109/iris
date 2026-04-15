@@ -24,7 +24,9 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "bridge.hpp"
+#include "bridge_utils.hpp"
 #include <chrono>
+#include <cinttypes>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgcodecs.hpp>
 #include <fstream>
@@ -97,24 +99,6 @@ public:
   }
 
 private:
-  void publishPose(const Eigen::Matrix4f & T, const std::string & child_frame_id)
-  {
-    Eigen::Matrix3f R = T.topLeftCorner(3, 3);
-    Eigen::Quaternionf q(R);
-    geometry_msgs::msg::TransformStamped ts;
-    ts.header.stamp = now();
-    ts.header.frame_id = "world";
-    ts.child_frame_id = child_frame_id;
-    ts.transform.translation.x = T(0, 3);
-    ts.transform.translation.y = T(1, 3);
-    ts.transform.translation.z = T(2, 3);
-    ts.transform.rotation.x = q.x();
-    ts.transform.rotation.y = q.y();
-    ts.transform.rotation.z = q.z();
-    ts.transform.rotation.w = q.w();
-    tf_broadcaster_->sendTransform(ts);
-  }
-
   void onTimer()
   {
     if (!subscribed_image_.empty()) {
@@ -147,12 +131,12 @@ private:
         vslam_pub_->publish(cloud_msg);
       }
 
-      long time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+      int64_t time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now() - m_start).count();
-      RCLCPP_INFO(get_logger(), "processing time= %ld ms", time_ms);
+      RCLCPP_INFO(get_logger(), "processing time= %" PRId64 " ms", time_ms);
     }
 
-    publishPose(bridge_.getCameraPose().inverse(), "iris/vslam_pose");
+    publishPose(*tf_broadcaster_, *this, bridge_.getCameraPose().inverse(), "iris/vslam_pose");
   }
 
   // State

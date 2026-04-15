@@ -28,6 +28,7 @@
 #include "publish/publish.hpp"
 #include "system/system.hpp"
 #include <chrono>
+#include <cinttypes>
 #include <fstream>
 #include <iomanip>
 #include <limits>
@@ -203,9 +204,9 @@ private:
       }
       last_map_info_ = map_->getLocalmapInfo();
 
-      long time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+      int64_t time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now() - m_start).count();
-      RCLCPP_INFO(get_logger(), "Iris/ALIGN: processing time= %ld ms", time_ms);
+      RCLCPP_INFO(get_logger(), "Iris/ALIGN: processing time= %" PRId64 " ms", time_ms);
 
       std_msgs::msg::Float32 scale_msg;
       scale_msg.data = iris::util::getScale(publication.T_align);

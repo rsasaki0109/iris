@@ -24,7 +24,9 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "stereo_bridge.hpp"
+#include "bridge_utils.hpp"
 #include <chrono>
+#include <cinttypes>
 #include <functional>
 #include <cv_bridge/cv_bridge.h>
 #include <fstream>
@@ -41,8 +43,10 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
-using ApproxSync = message_filters::sync_policies::ApproximateTime<
+using ApproxSyncCompressed = message_filters::sync_policies::ApproximateTime<
   sensor_msgs::msg::CompressedImage, sensor_msgs::msg::CompressedImage>;
+using ApproxSyncRaw = message_filters::sync_policies::ApproximateTime<
+  sensor_msgs::msg::Image, sensor_msgs::msg::Image>;
 
 class OpenVSLAMStereoBridgeNode : public rclcpp::Node
 {
@@ -69,28 +73,34 @@ public:
     recollection_ = get_parameter("keyframe_recollection").as_int();
     height_ = static_cast<float>(get_parameter("max_height").as_double());
 
-    const bool is_compressed = get_parameter("is_image_compressed").as_bool();
-    if (!is_compressed) {
-      RCLCPP_ERROR(get_logger(), "Only compressed image is supported");
-      throw std::runtime_error("Only compressed image is acceptable");
-    }
+    is_compressed_ = get_parameter("is_image_compressed").as_bool();
 
     RCLCPP_INFO(get_logger(),
-      "vocab_path: %s, config: %s, topic0: %s",
-      vocab_path.c_str(), vslam_config_path.c_str(), topic0.c_str());
+      "vocab_path: %s, config: %s, topic0: %s, compressed: %d",
+      vocab_path.c_str(), vslam_config_path.c_str(), topic0.c_str(), is_compressed_);
 
     bridge_.setup(vslam_config_path, vocab_path);
 
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(*this);
 
     // Synchronized stereo subscribers
-    infra0_sub_.subscribe(this, topic0);
-    infra1_sub_.subscribe(this, topic1);
-    sync_ = std::make_shared<message_filters::Synchronizer<ApproxSync>>(
-      ApproxSync(10), infra0_sub_, infra1_sub_);
-    sync_->registerCallback(
-      std::bind(&OpenVSLAMStereoBridgeNode::onStereoImage, this,
-        std::placeholders::_1, std::placeholders::_2));
+    if (is_compressed_) {
+      comp0_sub_.subscribe(this, topic0 + "/compressed");
+      comp1_sub_.subscribe(this, topic1 + "/compressed");
+      sync_compressed_ = std::make_shared<message_filters::Synchronizer<ApproxSyncCompressed>>(
+        ApproxSyncCompressed(10), comp0_sub_, comp1_sub_);
+      sync_compressed_->registerCallback(
+        std::bind(&OpenVSLAMStereoBridgeNode::onStereoCompressed, this,
+          std::placeholders::_1, std::placeholders::_2));
+    } else {
+      raw0_sub_.subscribe(this, topic0);
+      raw1_sub_.subscribe(this, topic1);
+      sync_raw_ = std::make_shared<message_filters::Synchronizer<ApproxSyncRaw>>(
+        ApproxSyncRaw(10), raw0_sub_, raw1_sub_);
+      sync_raw_->registerCallback(
+        std::bind(&OpenVSLAMStereoBridgeNode::onStereoRaw, this,
+          std::placeholders::_1, std::placeholders::_2));
+    }
 
     // Publishers
     vslam_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("iris/vslam_data", 1);
@@ -105,33 +115,28 @@ public:
   }
 
 private:
-  void onStereoImage(
+  void onStereoCompressed(
     const sensor_msgs::msg::CompressedImage::ConstSharedPtr & img0,
     const sensor_msgs::msg::CompressedImage::ConstSharedPtr & img1)
   {
-    int flag = is_color_ ? 1 : 0;
+    int flag = is_color_ ? cv::IMREAD_COLOR : cv::IMREAD_GRAYSCALE;
     subscribed_image0_ = cv::imdecode(cv::Mat(img0->data), flag);
     subscribed_image1_ = cv::imdecode(cv::Mat(img1->data), flag);
     subscribed_stamp_ = img0->header.stamp;
   }
 
-  void publishPose(const Eigen::Matrix4f & T, const std::string & child_frame_id)
+  void onStereoRaw(
+    const sensor_msgs::msg::Image::ConstSharedPtr & img0,
+    const sensor_msgs::msg::Image::ConstSharedPtr & img1)
   {
-    Eigen::Matrix3f R = T.topLeftCorner(3, 3);
-    Eigen::Quaternionf q(R);
-    geometry_msgs::msg::TransformStamped ts;
-    ts.header.stamp = now();
-    ts.header.frame_id = "world";
-    ts.child_frame_id = child_frame_id;
-    ts.transform.translation.x = T(0, 3);
-    ts.transform.translation.y = T(1, 3);
-    ts.transform.translation.z = T(2, 3);
-    ts.transform.rotation.x = q.x();
-    ts.transform.rotation.y = q.y();
-    ts.transform.rotation.z = q.z();
-    ts.transform.rotation.w = q.w();
-    tf_broadcaster_->sendTransform(ts);
+    const auto enc = is_color_ ? sensor_msgs::image_encodings::BGR8
+                               : sensor_msgs::image_encodings::MONO8;
+    subscribed_image0_ = cv_bridge::toCvCopy(img0, enc)->image.clone();
+    subscribed_image1_ = cv_bridge::toCvCopy(img1, enc)->image.clone();
+    subscribed_stamp_ = img0->header.stamp;
   }
+
+  // publishPose: defined in bridge_utils.hpp
 
   void onTimer()
   {
@@ -169,12 +174,12 @@ private:
         vslam_pub_->publish(cloud_msg);
       }
 
-      long time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+      int64_t time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now() - m_start).count();
-      RCLCPP_INFO(get_logger(), "processing time= %ld ms", time_ms);
+      RCLCPP_INFO(get_logger(), "processing time= %" PRId64 " ms", time_ms);
     }
 
-    publishPose(bridge_.getCameraPose().inverse(), "iris/vslam_pose");
+    publishPose(*tf_broadcaster_, *this, bridge_.getCameraPose().inverse(), "iris/vslam_pose");
   }
 
   // State
@@ -184,6 +189,7 @@ private:
   float height_{std::numeric_limits<float>::max()};
   int recollection_{30};
   bool is_color_{true};
+  bool is_compressed_{true};
   static constexpr int lower_threshold_ = 1000;
   static constexpr int upper_threshold_ = 1500;
   pcl::PointCloud<pcl::PointXYZINormal>::Ptr vslam_data_;
@@ -193,8 +199,10 @@ private:
 
   // ROS
   rclcpp::TimerBase::SharedPtr timer_;
-  message_filters::Subscriber<sensor_msgs::msg::CompressedImage> infra0_sub_, infra1_sub_;
-  std::shared_ptr<message_filters::Synchronizer<ApproxSync>> sync_;
+  message_filters::Subscriber<sensor_msgs::msg::CompressedImage> comp0_sub_, comp1_sub_;
+  message_filters::Subscriber<sensor_msgs::msg::Image> raw0_sub_, raw1_sub_;
+  std::shared_ptr<message_filters::Synchronizer<ApproxSyncCompressed>> sync_compressed_;
+  std::shared_ptr<message_filters::Synchronizer<ApproxSyncRaw>> sync_raw_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr vslam_pub_;
   image_transport::Publisher image_pub_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
