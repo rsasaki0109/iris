@@ -8,23 +8,32 @@ import os
 
 def generate_launch_description():
     pkg_iris = get_package_share_directory("iris")
-    pkg_root = os.path.join(pkg_iris, "..", "..", "..", "..")  # workspace root
+    pkg_openvslam_bridge = get_package_share_directory("openvslam_bridge")
 
     return LaunchDescription([
         DeclareLaunchArgument(
             "iris_config_path",
-            default_value=os.path.join(pkg_iris, "..", "config", "iris_stereo_kitti.yaml"),
+            default_value=os.path.join(pkg_iris, "config", "iris_stereo_kitti.yaml"),
+            description="Path to iris config yaml",
         ),
         DeclareLaunchArgument(
             "vslam_config_path",
             default_value=os.path.join(
-                pkg_iris, "..", "openvslam_bridge", "3rd", "openvslam",
-                "example", "kitti", "KITTI_stereo_00-02.yaml"),
+                pkg_openvslam_bridge, "config", "KITTI_stereo_00-02.yaml"),
+            description="Path to OpenVSLAM config yaml",
         ),
-        DeclareLaunchArgument("pcd_path", default_value=os.path.join(pkg_root, "kitti_00.pcd")),
-        DeclareLaunchArgument("vocab_file", default_value=os.path.join(pkg_root, "orb_vocab.dbow2")),
-        DeclareLaunchArgument("image_topic_name0", default_value="/image_raw0/compressed"),
-        DeclareLaunchArgument("image_topic_name1", default_value="/image_raw1/compressed"),
+        DeclareLaunchArgument(
+            "pcd_path",
+            default_value=os.path.join(os.path.expanduser("~"), "kitti_00.pcd"),
+            description="Path to pre-built pointcloud map (.pcd)",
+        ),
+        DeclareLaunchArgument(
+            "vocab_file",
+            default_value=os.path.join(os.path.expanduser("~"), "orb_vocab.dbow2"),
+            description="Path to ORB vocabulary file (.dbow2)",
+        ),
+        DeclareLaunchArgument("image_topic_name0", default_value="/image_raw0"),
+        DeclareLaunchArgument("image_topic_name1", default_value="/image_raw1"),
         DeclareLaunchArgument("is_image_compressed", default_value="true"),
         DeclareLaunchArgument("is_image_color", default_value="false"),
         DeclareLaunchArgument("keyframe_recollection", default_value="30"),
@@ -44,7 +53,7 @@ def generate_launch_description():
             package="openvslam_bridge",
             executable="openvslam_stereo_bridge_node",
             name="openvslam_stereo_bridge_node",
-            output="log",
+            output="screen",
             parameters=[{
                 "vslam_config_path": LaunchConfiguration("vslam_config_path"),
                 "vocab_path": LaunchConfiguration("vocab_file"),
